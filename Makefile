@@ -5,7 +5,7 @@ main.py: regexp input.txt
 	./regexp < input.txt
 
 regexp: regexp.yy.c regexp.tab.c
-	gcc -o $@ $^ -lfl
+	gcc -o $@ $^ -ly -ll
 #	gcc -mmacosx-version-min=13.1 -o $@ $^ ${"-L/usr/local/opt/flex/lib"} -ly -lfl
 
 regexp.tab.c: regexp.y
