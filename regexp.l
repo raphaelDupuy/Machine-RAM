@@ -6,7 +6,8 @@
 
 %%
 
-"ADD"       { return ADD }
-"JUMP"      { return JUMP }
-"JE"        { return JE }
-\n          { return FDL }
+
+[A-Z0-9()]*     { return INSTRUCTION; }
+\n              { return FDL; }
+
+%%
