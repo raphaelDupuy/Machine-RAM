@@ -1,4 +1,5 @@
 %{
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -96,17 +97,17 @@ contenu:
         input FDL programme         { ; }
     ;
 input:
-        INSTRUCTION                 { printf("input\n"); appendString(&debut, conc(3, "input = '", $1, "'\n\nprogramme = [\n")); }
+        INSTRUCTION                 { appendString(&debut, conc(3, "input = '", $1, "'\n\nprogramme = [\n")); }
     ;
 programme:
-        INSTRUCTION                 { printf("instruction 1\n"); appendString(&debut, conc(3, "'", $1, "',\n")); }
-    |   programme FDL programme     { printf("instruction 2\n"); }
+        INSTRUCTION                 { appendString(&debut, conc(3, "'", $1, "',\n")); }
+    |   programme FDL programme     { ; }
     ;
 %%
 
 int main() {
     appendString(&debut, "from machine_RAM import *\n\n");
-    appendString(&fin, "]\n\n");
+    appendString(&fin, "]\n\nram = machine(programme, input)\n\nprint(ram)\n");
 
     yyparse();
     

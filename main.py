@@ -11,3 +11,6 @@ programme = [
 'ADD(0,R0,O1)',
 ]
 
+ram = machine(programme, input)
+
+print(ram)
