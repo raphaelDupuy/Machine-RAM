@@ -6,8 +6,8 @@
 
 %%
 
-
-[A-Z0-9()]*     { return INSTRUCTION; }
-\n              { return FDL; }
+\n                 { return FDL; }
+[A-Z0-9(),@-]+     { yylval.lettre = yytext; return INSTRUCTION; }
+.        		   { return yytext[0]; }
 
 %%
