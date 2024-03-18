@@ -90,6 +90,8 @@ StringBuffer fin;
 %token INSTRUCTION
 %token FDL
 
+%left FDL
+
 %type <lettre> INSTRUCTION programme input
 
 %%
