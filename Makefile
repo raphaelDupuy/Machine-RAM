@@ -21,3 +21,4 @@ clean:
 	rm -f regexp.yy.c   rm -f regexp.output regexp.tab.c regexp.tab.h
 	rm -f regexp
 	ls -als
+	truncate -c -s 0 main.py
