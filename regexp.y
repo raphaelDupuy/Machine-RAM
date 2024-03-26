@@ -111,7 +111,7 @@ programme:
 
 int main() {
     appendString(&debut, "from machine_RAM import *\n\n");
-    appendString(&fin, "]\n\nram = machine(programme, input)\n\nram.calcule()\n");
+    appendString(&fin, "]\n\nram = Machine(programme, input)\n\nram.calcule()\n");
 
     yyparse();
     
