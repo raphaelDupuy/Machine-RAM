@@ -51,7 +51,10 @@ class machine(object):
 
     def valeur(self, val: str) -> int:
         if val[0] in ("R", "I", "O"):
-            return self.registre[val]
+            if val[1] == "@":
+                return self.registre[val[0] + str(self.valeur(val.split("@")[1]))]
+            else:
+                return self.registre[val]
         else:
             return int(val)
         
