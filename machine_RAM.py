@@ -5,14 +5,11 @@ class machine(object):
         self.prog = programme
         self.etape = 0
     
-        self.entree = {}
+        self.registre = {}
         indice = 0
         for elt in entree:
-            self.entree["I" + str(indice)] = elt
+            self.registre["I" + str(indice)] = elt
             indice += 1
-        
-        self.travail = {}
-        self.sortie = {}
     
     def __str__(self) -> str:
         output, ligne = "Programme:\n", 0
@@ -28,34 +25,33 @@ class machine(object):
     def get_instr(self):
         return self.prog[self.etape]
     
-    def get_sortie(self, pointeur=None) -> dict|int:
-        if pointeur != None:
-            return self.sortie["O" + str(pointeur)]
-        else:
-            return self.sortie
-        
-    def get_travail(self, pointeur=None) -> dict|int:
-        if pointeur != None:
-            return self.travail["R" + str(pointeur)]
-        else:
-            return self.travail 
+    def get_registre(self):
+        return self.registre
     
-    def get_entree(self, pointeur=None) -> dict|int:
+    def get_sortie(self, pointeur=None) -> list|int:
         if pointeur != None:
-            return self.entree["I" + str(pointeur)]
+            return self.registre["O" + str(pointeur)]
         else:
-            return self.entree
+            return [(str(k) + " :" + str(v)) for k, v in self.get_registre().items() if k[0] == "O"]
+        
+    def get_travail(self, pointeur=None) -> list|int:
+        if pointeur != None:
+            return self.registre["R" + str(pointeur)]
+        else:
+            return [(str(k) + " :" + str(v)) for k, v in self.get_registre().items() if k[0] == "R"]
+    
+    def get_entree(self, pointeur=None) -> list|int:
+        if pointeur != None:
+            return self.registre["I" + str(pointeur)]
+        else:
+            return [(str(k) + " :" + str(v)) for k, v in self.get_registre().items() if k[0] == "I"]
         
     def set_etape(self, nouvelle_etape):
         self.etape = nouvelle_etape
 
     def valeur(self, val: str) -> int:
-        if (registre := val[0]) == "R":
-            return self.travail[val]
-        elif registre == "I":
-            return self.entree[val]
-        elif registre == "O":
-            return self.sortie[val]
+        if val[0] in ("R", "I", "O"):
+            return self.registre[val]
         else:
             return int(val)
         
@@ -71,12 +67,8 @@ class machine(object):
 
             case["ADD", args]:
                 print("ADD")
-                if (registre := args[2][0]) == "R":
-                    self.travail[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
-                elif registre == "I":
-                    self.entree[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
-                elif registre == "O":
-                    self.sortie[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
+                if args[2][0] in ("R", "I", "O"):
+                    self.registre[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
                 self.set_etape(self.get_etape() + 1)            
 
             case["JUMP", args]:
