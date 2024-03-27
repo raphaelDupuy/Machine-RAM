@@ -137,17 +137,34 @@ class Machine(object):
                 if self.valeur(args[0]) == self.valeur(args[1]):
                     self.set_etape(self.get_etape() + int(args[2]))
                 else:
-                    self.set_etape(self.get_etape() + 1)            
-
-            case["ADD", args]:
-                print("ADD")
-                if args[2][0] in ("R", "I", "O"):
-                    self.registre[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
-                self.set_etape(self.get_etape() + 1)            
+                    self.set_etape(self.get_etape() + 1)
 
             case["JUMP", args]:
                 print("JUMP")
                 self.set_etape(self.get_etape() + int(args[0]))
+
+            case["ADD", args]:
+                print("ADD")
+                self.registre[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
+                self.set_etape(self.get_etape() + 1)
+
+            case["MULT", args]:
+                print("MULT")
+                self.registre[args[2]] = self.valeur(args[0]) * self.valeur(args[1])
+                self.set_etape(self.get_etape() + 1)
+
+            case["DIV", args]:
+                print("DIV")
+                self.registre[args[2]] = self.valeur(args[0]) // self.valeur(args[1])
+                self.set_etape(self.get_etape() + 1)
+
+            case["JL", args]:
+                print("JL")
+                if self.valeur(args[0]) < self.valeur(args[1]):
+                    self.set_etape(self.get_etape() + int(args[2]))
+                else:
+                    self.set_etape(self.get_etape() + 1)
+                
 
     def calcule(self):
         """Éxecute le programme RAM de la machine
