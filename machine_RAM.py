@@ -110,6 +110,22 @@ class Machine(object):
         """
         self.etape = nouvelle_etape
 
+    def adresse(self, val: str) -> str:
+        """Retourne l'adresse donnée ou l'adresse indirecte
+
+        Arguments:
+            val (str): Adresse directe OU Adresse indirecte
+
+        Retourne:
+            str: Adresse directe donnée OU adresse pointée par l'indirection
+        """
+
+        if val[0] in ("R", "I", "O"):
+            if val[1] == "@":
+                return str(val[0]) + str(self.valeur(val.split("@")[1]))
+            else:
+                return val
+
     def valeur(self, val: str) -> int:
         """Retourne la valeur stockée à un indice dans un registre donné ou une valeur donnée
         
@@ -145,17 +161,17 @@ class Machine(object):
 
             case["ADD", args]:
                 print("ADD")
-                self.registre[args[2]] = self.valeur(args[0]) + self.valeur(args[1])
+                self.registre[self.adresse(args[2])] = self.valeur(args[0]) + self.valeur(args[1])
                 self.set_etape(self.get_etape() + 1)
 
             case["MULT", args]:
                 print("MULT")
-                self.registre[args[2]] = self.valeur(args[0]) * self.valeur(args[1])
+                self.registre[self.adresse(args[2])] = self.valeur(args[0]) * self.valeur(args[1])
                 self.set_etape(self.get_etape() + 1)
 
             case["DIV", args]:
                 print("DIV")
-                self.registre[args[2]] = self.valeur(args[0]) // self.valeur(args[1])
+                self.registre[self.adresse(args[2])] = self.valeur(args[0]) // self.valeur(args[1])
                 self.set_etape(self.get_etape() + 1)
 
             case["JL", args]:
