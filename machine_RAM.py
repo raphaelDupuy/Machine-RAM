@@ -146,41 +146,43 @@ class Machine(object):
         
     def next(self):
         """Éxecute l'instruction à l'étape courante"""
+
+        saut = 0
         match self.get_instr().split("(")[0], self.get_instr().split("(")[1].split(")")[0].split(","):
 
             case["JE", args]:
                 print("JE")
                 if self.valeur(args[0]) == self.valeur(args[1]):
                     self.set_etape(self.get_etape() + int(args[2]))
-                else:
-                    self.set_etape(self.get_etape() + 1)
+                saut = 1
 
             case["JUMP", args]:
                 print("JUMP")
-                self.set_etape(self.get_etape() + int(args[0]))
+                saut = int(args[0])
 
             case["ADD", args]:
                 print("ADD")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) + self.valeur(args[1])
-                self.set_etape(self.get_etape() + 1)
+                saut = 1
 
             case["MULT", args]:
                 print("MULT")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) * self.valeur(args[1])
-                self.set_etape(self.get_etape() + 1)
+                saut = 1
 
             case["DIV", args]:
                 print("DIV")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) // self.valeur(args[1])
-                self.set_etape(self.get_etape() + 1)
+                saut = 1
 
             case["JL", args]:
                 print("JL")
                 if self.valeur(args[0]) < self.valeur(args[1]):
-                    self.set_etape(self.get_etape() + int(args[2]))
+                    saut = int(args[2])
                 else:
-                    self.set_etape(self.get_etape() + 1)
-                
+                    saut = 1
+        
+        self.set_etape(self.get_etape() + saut)
 
     def calcule(self):
         """Éxecute le programme RAM de la machine
