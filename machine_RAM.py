@@ -38,6 +38,10 @@ class Machine(object):
         """Retourne la représentation d'un objet de la classe Machine"""
         return f"Etape {self.get_etape()}, Registre: {self.get_registre()}\nEntrée: {self.get_entree()}     Travail: {self.get_travail()}     Sortie: {self.get_sortie()}"
 
+    def affiche_config(self):
+        """Retourne la configuration courante de la machine (Étape et état des registres)"""
+        print(f"Etape: {self.get_etape()}\nI {self.get_entree()}\nT {self.get_travail()}\nO {self.get_sortie()}\n")
+
     def get_etape(self) -> int:
         """Retourne l'étape courante de la machine"""
         return self.etape
@@ -192,5 +196,5 @@ class Machine(object):
         """
         while self.get_etape() < len(self.prog):
             self.next()
-            print(self)
+            self.affiche_config()
         print("Output : " + str(self.get_sortie()))
