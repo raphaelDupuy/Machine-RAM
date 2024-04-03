@@ -16,7 +16,7 @@ Le langage RAM utilisé contient le jeu d'instructions suivant :
 | JL | X, Y, N | Saute *N* instructions si la valeur de X est strictement inférieure à la valeur de Y |
 | JE | X, Y, N | Saute *N* instructions si les valeurs de X et Y sont égales |
 
-<sub>*X et Y étant des entiers relatifs donnés directement ou des pointeurs de registres en contenant et N un entier relatif.*</sub>
+<sub>*N, X et Y étant des entiers relatifs donnés directement ou des pointeurs de registres en contenant.*</sub>
 
 ## Utilisation / Spécifications techniques
 
@@ -35,7 +35,7 @@ Ex :
 3,20,19,42
 ADD(0,1,O0)
 ADD(I1,I2,R0)
-JE(R0,42,I3)
+JE(R0,I3,2)
 ADD(R0,1,R0)
 JUMP(-2)
 ADD(0,R0,O1)

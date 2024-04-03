@@ -157,12 +157,19 @@ class Machine(object):
             case["JE", args]:
                 print("JE")
                 if self.valeur(args[0]) == self.valeur(args[1]):
-                    self.set_etape(self.get_etape() + int(args[2]))
-                saut = 1
+                    if (taille  := self.valeur(args[2])) < 0:
+                        saut = taille - 1
+                    else:
+                        saut = taille + 1
+                else:
+                    saut = 1
 
             case["JUMP", args]:
                 print("JUMP")
-                saut = int(args[0])
+                if (taille  := self.valeur(args[0])) < 0:
+                    saut = taille - 1
+                else:
+                    saut = taille + 1
 
             case["ADD", args]:
                 print("ADD")
@@ -182,7 +189,10 @@ class Machine(object):
             case["JL", args]:
                 print("JL")
                 if self.valeur(args[0]) < self.valeur(args[1]):
-                    saut = int(args[2])
+                    if (taille  := self.valeur(args[2])) < 0:
+                        saut = taille - 1
+                    else:
+                        saut = taille + 1
                 else:
                     saut = 1
         
