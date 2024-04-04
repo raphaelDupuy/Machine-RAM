@@ -37,7 +37,7 @@ ADD(0,1,O0)
 ADD(I1,I2,R0)
 JE(R0,I3,2)
 ADD(R0,1,R0)
-JUMP(-2)
+JUMP(-1)
 ADD(0,R0,O1)
 ```
 
