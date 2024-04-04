@@ -207,4 +207,4 @@ class Machine(object):
         while self.get_etape() < len(self.prog):
             self.next()
             self.affiche_config()
-        print("Output : " + str(self.get_sortie()))
+        print("Sortie : " + str(self.get_sortie()))

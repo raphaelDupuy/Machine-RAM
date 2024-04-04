@@ -16,7 +16,7 @@ Le langage RAM utilisé contient le jeu d'instructions suivant :
 | JL | X, Y, N | Saute *N* instructions si la valeur de X est strictement inférieure à la valeur de Y |
 | JE | X, Y, N | Saute *N* instructions si les valeurs de X et Y sont égales |
 
-<sub>*N, X et Y étant des entiers relatifs donnés directement ou des pointeurs de registres en contenant.*</sub>
+<sub>*N, X et Y étant des entiers relatifs donnés directement ou des pointeurs de registres en contenant et R étant un pointeur de registre.*</sub>
 
 ## Utilisation / Spécifications techniques
 
@@ -43,8 +43,29 @@ ADD(0,R0,O1)
 
  <sub>D'autres exemples sont trouvables dans le dossier **Exemples_machines**.</sub>
 
-Une fois le fichier **input.1** rempli, l'exécution se fait via la commande ```make``` dans le terminal.
+ Une fois le fichier **input.1** rempli, l'exécution se fait via la commande ```make``` dans le terminal.
 
+
+ À chaque changement d'état la configuration de la machine est affichée (Instruction, Étape, Contenu des registres).  
+
+ Ex :
+ ```
+ ADD
+ Etape: 4
+ I ['I0 :3', 'I1 :20', 'I2 :19', 'I3 :42']
+ T ['R0 :40']
+ O ['O0 :1']
+ ```
+
+ Une fois l'exécution terminée, le registre de sortie est affiché.
+
+ Ex:
+ ```
+ Sortie : ['O0 :1', 'O1 :42']
+ ```
+
+### Concernant le développement
+Ce programme a été réalisé en utilisant Yacc et Lex pour la partie analyse syntaxique / analyse lexicale, ainsi que python pour la partie calcul et machine RAM.
 
 
 ### Collaborateurs
