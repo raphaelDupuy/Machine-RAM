@@ -42,6 +42,10 @@ class Machine(object):
         """Retourne la configuration courante de la machine (Étape et état des registres)"""
         print(f"Etape: {self.get_etape()}\nI {self.get_entree()}\nT {self.get_travail()}\nO {self.get_sortie()}\n")
 
+    def get_prog(self):
+        """Retourne le programme RAM"""
+        return self.prog
+
     def get_etape(self) -> int:
         """Retourne l'étape courante de la machine"""
         return self.etape
@@ -198,13 +202,72 @@ class Machine(object):
         
         self.set_etape(self.get_etape() + saut)
 
+    def graphe(self):
+        """Fonction d'affichage du graphe correspondant au programme RAM
+        Le dernier état est l'état de Fin de programme
+        """
+        
+        aretes = []
+        etape = 0
+        programme = self.get_prog()
+        sommets = len(programme)
+
+        for instr in programme:
+            match instr.split("(")[0], instr.split("(")[1].split(")")[0].split(","):
+                
+                case["ADD", args]:
+                    aretes.append((etape, etape+1))
+
+                case["MULT", args]:
+                    aretes.append((etape, etape+1))
+
+                case["DIV", args]:
+                    aretes.append((etape, etape+1))
+
+                case["JUMP", args]:
+                    valeur = self.valeur(args[0])
+                    saut = etape + valeur + (1 if valeur > 0 else (- 1 if valeur < 0 else 0))
+                    if saut < 0:
+                        saut = 0
+                    elif saut > sommets:
+                        saut = sommets
+                    aretes.append((etape, saut))
+
+                case["JE", args]:
+                    valeur = self.valeur(args[2])
+                    saut = etape + valeur + (1 if valeur > 0 else (- 1 if valeur < 0 else 0))
+                    if saut < 0:
+                        saut = 0
+                    elif saut > sommets:
+                        saut = sommets
+                    aretes.append((etape, etape + 1))
+                    aretes.append((etape, saut))
+
+                case["JL", args]:
+                    valeur = self.valeur(args[2])
+                    saut = etape + valeur + (1 if valeur > 0 else (- 1 if valeur < 0 else 0))
+                    if saut < 0:
+                        saut = 0
+                    elif saut > sommets:
+                        saut = sommets
+                    aretes.append((etape, etape + 1))
+                    aretes.append((etape, saut))
+
+            etape += 1       
+
+        print(sommets, aretes)
+
     def calcule(self):
         """Éxecute le programme RAM de la machine
         
         Retourne:
             print: Configuration lisible de la machine à chaque étape puis registre Sortie à la fin du programme
         """
+
         while self.get_etape() < len(self.prog):
             self.next()
             self.affiche_config()
+        
+        self.graphe()
         print("Sortie : " + str(self.get_sortie()))
+
