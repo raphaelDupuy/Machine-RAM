@@ -50,9 +50,12 @@ class Machine(object):
         """Retourne l'étape courante de la machine"""
         return self.etape
     
-    def get_instr(self) -> str:
+    def get_instr(self, etape=None) -> str:
         """Retourne l'instruction courante à effectuer par la machine"""
-        return self.prog[self.etape]
+        if etape != None:
+            return self.prog[etape]
+        else:
+            return self.prog[self.etape]
     
     def get_registre(self) -> dict:
         """Retourne l'ensemble de la mémoire de la machine
@@ -109,6 +112,10 @@ class Machine(object):
             return self.registre["I" + str(pointeur)]
         else:
             return [(str(k) + " :" + str(v)) for k, v in self.get_registre().items() if k[0] == "I"]
+        
+    def delete_instr(self, etape:int):
+        """Retire l'instruction à l'étape donnée"""
+        del self.prog[etape]
         
     def set_etape(self, nouvelle_etape):
         """Remplace l'étape courante par une nouvelle étape
@@ -206,7 +213,7 @@ class Machine(object):
         """Fonction d'affichage du graphe correspondant au programme RAM
         Le dernier état est l'état de Fin de programme
         """
-        
+
         aretes = []
         etape = 0
         programme = self.get_prog()
@@ -255,7 +262,55 @@ class Machine(object):
 
             etape += 1       
 
-        print(sommets, aretes)
+        return(sommets, aretes)
+
+    def detection_code_mort(self):
+        """Fonction de détection du code mort
+        
+        Retourne:
+            set(int): l'ensemble des états jamais accessibles dans le programme de la machine RAM
+        """
+
+        def etats_accessibles(transitions, etat_actuel):
+            """Fonction de détection des états accessibles à partir d'un état donné et d'un jeu de transitions
+            
+            Arguments:
+                transitions list[tuple]: transitions du graphe (état_départ, état_arrivée)
+                etat_actuel (int): numéro correspondant à l'état à partir duquel nous voulons trouver les états accessibles
+
+            Retourne:
+                list[int]: liste des états accessibles à partir de l'état donné
+            """
+            accessibles = []
+            for etat_depart, etat_arrivee in transitions:
+                if etat_depart == etat_actuel:
+                    accessibles.append(etat_arrivee)
+
+            return accessibles
+        
+
+        taille, transitions = self.graphe()
+        accessibles = set()
+        actuels = [0]
+
+        while actuels:
+            nouveaux = []
+
+            for etat in actuels:
+                temp = etats_accessibles(transitions, etat)
+                for e in temp:
+                    if e not in accessibles:
+                        nouveaux.append(e)
+            
+            accessibles.update(nouveaux)
+            actuels = nouveaux
+
+        non_accessibles = set()
+        for i in range(taille, 0, -1):
+            if i not in accessibles:
+                non_accessibles.add(i)
+
+        return non_accessibles
 
     def calcule(self):
         """Éxecute le programme RAM de la machine
@@ -263,11 +318,23 @@ class Machine(object):
         Retourne:
             print: Configuration lisible de la machine à chaque étape puis registre Sortie à la fin du programme
         """
+        print(graphe := self.graphe())
+
+        if (indexes := self.detection_code_mort()):
+            non_acc = []
+            for i in indexes:
+                if i == graphe[0]:
+                    print("Le programme ne termine jamais")
+                    break
+                else:
+                    non_acc.append(self.get_instr(i))
+            print(f"Les instructions suivantes ne sont jamais accessibles: {non_acc}\nEtape(s):  {indexes}\n")
+        else:
+            print("Aucun code mort détecté\n")
 
         while self.get_etape() < len(self.prog):
             self.next()
             self.affiche_config()
-        
-        self.graphe()
+
         print("Sortie : " + str(self.get_sortie()))
 
