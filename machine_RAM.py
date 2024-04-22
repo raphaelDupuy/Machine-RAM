@@ -324,8 +324,7 @@ class Machine(object):
             non_acc = []
             for i in indexes:
                 if i == graphe[0]:
-                    print("Le programme ne termine jamais")
-                    break
+                    raise SyntaxError("Le programme ne termine jamais")
                 else:
                     non_acc.append(self.get_instr(i))
             print(f"Les instructions suivantes ne sont jamais accessibles: {non_acc}\nEtape(s):  {indexes}\n")
