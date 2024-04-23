@@ -15,7 +15,6 @@ class Machine(object):
             programme (list[str]): Liste d'instructions respectant la forme décrite dans le README
             entree (list[int]): Valeurs présentes dans le registre d'entrée
         """
-        
         self.prog = programme
         self.etape = 0
     
@@ -70,12 +69,11 @@ class Machine(object):
         
         Arguments:
             pointeur (int): Emplacement de la valeur à retourner
-                (None par défaut)
+            (None par défaut)
         
         Retourne:
             list[str]|int: Liste contenant les valeurs stockées dans le registre et leur numérotation ou simplement la valeur voulue
         """
-
         if pointeur != None:
             return self.registre["O" + str(pointeur)]
         else:
@@ -91,7 +89,6 @@ class Machine(object):
         Retourne:
             list[str]|int: Liste contenant les valeurs stockées dans le registre et leur numérotation ou simplement la valeur voulue
         """
-
         if pointeur != None:
             return self.registre["R" + str(pointeur)]
         else:
@@ -107,7 +104,6 @@ class Machine(object):
         Retourne:
             list[str]|int: Liste contenant les valeurs stockées dans le registre et leur numérotation ou simplement la valeur voulue
         """
-
         if pointeur != None:
             return self.registre["I" + str(pointeur)]
         else:
@@ -125,6 +121,15 @@ class Machine(object):
         """
         self.etape = nouvelle_etape
 
+    def set_instr(self, index:int, nouvelle_instr:str):
+        """Remplace une instruction du programme à une étape donnée
+        
+        Arguments:
+            index (int): Étape de l'instruction à remplacer
+            nouvelle_instr (str): Instruction par laquelle remplacer l'ancienne
+            """
+        self.prog[index] = nouvelle_instr
+
     def adresse(self, val: str) -> str:
         """Retourne l'adresse donnée ou l'adresse indirecte
 
@@ -134,7 +139,6 @@ class Machine(object):
         Retourne:
             str: Adresse directe donnée OU adresse pointée par l'indirection
         """
-
         if val[0] in ("R", "I", "O"):
             if val[1] == "@":
                 return str(val[0]) + str(self.valeur(val.split("@")[1]))
@@ -150,7 +154,6 @@ class Machine(object):
         Retourne:
             int: Valeur donnée ou stockée à l'emplacement donné
         """
-
         if val[0] in ("R", "I", "O"):
             if val[1] == "@":
                 return self.registre[val[0] + str(self.valeur(val.split("@")[1]))]
@@ -161,7 +164,6 @@ class Machine(object):
         
     def next(self):
         """Éxecute l'instruction à l'étape courante"""
-
         saut = 0
         match self.get_instr().split("(")[0], self.get_instr().split("(")[1].split(")")[0].split(","):
 
@@ -213,7 +215,6 @@ class Machine(object):
         """Fonction d'affichage du graphe correspondant au programme RAM
         Le dernier état est l'état de Fin de programme
         """
-
         aretes = []
         etape = 0
         programme = self.get_prog()
@@ -264,15 +265,15 @@ class Machine(object):
 
         return(sommets, aretes)
 
-    def detection_code_mort(self):
+    def detection_code_mort(self) -> set:
         """Fonction de détection du code mort
         
         Retourne:
             set(int): l'ensemble des états jamais accessibles dans le programme de la machine RAM
         """
 
-        def etats_accessibles(transitions, etat_actuel):
-            """Fonction de détection des états accessibles à partir d'un état donné et d'un jeu de transitions
+        def etats_accessibles(transitions:list, etat_actuel:int) -> list:
+            """Fonction de détection des états accessibles à partir d'un état donné et d'un ensemble de transitions
             
             Arguments:
                 transitions list[tuple]: transitions du graphe (état_départ, état_arrivée)
@@ -311,6 +312,63 @@ class Machine(object):
                 non_accessibles.add(i)
 
         return non_accessibles
+    
+    def suppr(self, indexes:set):
+        """Supprime les instructions aux indexes donnés dans le programme tout en conservant son bon fonctionnement
+        
+        Arguments:
+            indexes (set): ensemble des indexes auquels supprimmer les instructions dans le programme
+            """
+
+        changements = []
+        jumps_morts = []
+
+        # Pour chaque instruction du programme
+        for etape, instr in enumerate(self.get_prog()):
+
+            # Si l'instruction contient un jump et qu'elle n'est pas une instruction morte
+            if ((instruction := instr.split("(")[0]) in {"JUMP", "JE", "JL"}) and (etape not in indexes):
+
+                # Récupérer la taille du jump
+                if instruction == "JUMP":
+                    taille = int(instr.split("(")[1].split(")")[0])
+                    corps = "JUMP("
+                else:
+                    taille = int(instr.split("(")[1].split(")")[0].split(",")[2])
+                    corps = str(instr.split(",")[0] + "," + instr.split(",")[1] + ",")
+
+                signe = 1 if taille >= 0 else -1
+
+                # Compter les instructions mortes dans le spectre du jump
+                cnt = 0
+                for i in range(signe, taille + signe, signe):
+                    if (etape + i) in indexes:
+                        cnt += 1
+
+                # Stocker le changement de taille du jump si sa taille change apres suppression
+                if cnt:
+                    nouvelle_taille = (taille - (cnt * signe))
+
+                    if nouvelle_taille:
+                        nouvelle_instr = corps + str(nouvelle_taille) + ")"
+                    else:
+                        nouvelle_instr = 0
+
+                    changements.append((etape, nouvelle_instr))
+
+        # Effectuer les changements dans la mémoire de la machine
+        for change in changements:
+            if change[1]:
+                self.set_instr(*change)
+            else:
+                jumps_morts.append(change[0])
+
+        indexes = sorted(list(indexes), reverse=True)
+        for etape in indexes:
+            self.delete_instr(etape)
+
+        if jumps_morts:
+            self.suppr(set(jumps_morts))
 
     def calcule(self):
         """Éxecute le programme RAM de la machine
@@ -318,22 +376,44 @@ class Machine(object):
         Retourne:
             print: Configuration lisible de la machine à chaque étape puis registre Sortie à la fin du programme
         """
-        print(graphe := self.graphe())
+
+        print("\nÉxecution du programme\n")
+        print(f"Graphe (Nb de sommets, transitions):\n{str(graphe := self.graphe())}\n")
 
         if (indexes := self.detection_code_mort()):
+
             non_acc = []
             for i in indexes:
                 if i == graphe[0]:
                     raise SyntaxError("Le programme ne termine jamais")
                 else:
                     non_acc.append(self.get_instr(i))
-            print(f"Les instructions suivantes ne sont jamais accessibles: {non_acc}\nEtape(s):  {indexes}\n")
+            
+            supp = str(input(f"Les instructions suivantes ne sont jamais accessibles: {non_acc}\nEtape(s):  {indexes}\nSupprimmer les instructions inaccessibles ?\ny: oui, sinon passer\n  >"))
+
+            if supp == "y":
+                self.suppr(indexes)
+                file = open("input.1", "w")
+                entree = ""
+                for elem in self.get_entree():
+                    entree += str(elem.split(":")[1] + ",")
+                entree = entree[:-1]
+
+                entree += "\n"
+                for instr in self.get_prog():
+                    entree += instr + "\n"
+                entree = entree[:-1]
+
+                file.write(entree)
+                file.close()
+
+                self.calcule()
+
         else:
             print("Aucun code mort détecté\n")
 
-        while self.get_etape() < len(self.prog):
-            self.next()
-            self.affiche_config()
+            while self.get_etape() < len(self.prog):
+                self.next()
+                self.affiche_config()
 
-        print("Sortie : " + str(self.get_sortie()))
-
+            print("Sortie : " + str(self.get_sortie()))
