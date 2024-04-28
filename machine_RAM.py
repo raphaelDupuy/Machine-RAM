@@ -165,10 +165,10 @@ class Machine(object):
     def next(self):
         """Éxecute l'instruction à l'étape courante"""
         saut = 0
+        print(self.get_instr())
         match self.get_instr().split("(")[0], self.get_instr().split("(")[1].split(")")[0].split(","):
-
+           
             case["JE", args]:
-                print("JE")
                 if self.valeur(args[0]) == self.valeur(args[1]):
                     if (taille  := self.valeur(args[2])) < 0:
                         saut = taille - 1
@@ -178,29 +178,24 @@ class Machine(object):
                     saut = 1
 
             case["JUMP", args]:
-                print("JUMP")
                 if (taille  := self.valeur(args[0])) < 0:
                     saut = taille - 1
                 else:
                     saut = taille + 1
 
             case["ADD", args]:
-                print("ADD")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) + self.valeur(args[1])
                 saut = 1
 
             case["MULT", args]:
-                print("MULT")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) * self.valeur(args[1])
                 saut = 1
 
             case["DIV", args]:
-                print("DIV")
                 self.registre[self.adresse(args[2])] = self.valeur(args[0]) // self.valeur(args[1])
                 saut = 1
 
             case["JL", args]:
-                print("JL")
                 if self.valeur(args[0]) < self.valeur(args[1]):
                     if (taille  := self.valeur(args[2])) < 0:
                         saut = taille - 1
