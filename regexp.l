@@ -11,5 +11,6 @@
 ","                { return VIRG; }
 [A-Z0-9(),@-]+     { yylval.lettre = yytext; return INSTRUCTION; }
 .        		   { return yytext[0]; }
+"<<EOF>>"          { return YYEOF; }
 
 %%

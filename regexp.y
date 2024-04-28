@@ -91,7 +91,6 @@ StringBuffer fin;
 %token FDL
 %token VIRG
 %token NUMB
-
 %left FDL
 
 %type <lettre> INSTRUCTION programme input NUMB
@@ -101,11 +100,13 @@ contenu:
         input FDL programme         { ; }
     ;
 input:
-    INSTRUCTION                     { appendString(&debut, conc(3, "input = [", $1, "]\n\nprogramme = [\n")); }
+        INSTRUCTION                 { appendString(&debut, conc(3, "input = [", $1, "]\n\nprogramme = [\n")); }
     ;
 programme:
         INSTRUCTION                 { appendString(&debut, conc(3, "'", $1, "',\n")); }
     |   programme FDL programme     { ; }
+    |   FDL programme               { ; }
+    |   YYEOF                       { ; }
     ;
 %%
 
