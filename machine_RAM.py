@@ -267,8 +267,9 @@ class Machine(object):
             set(int): l'ensemble des états jamais accessibles dans le programme de la machine RAM
         """
 
-        def etats_accessibles(transitions:list, etat_actuel:int) -> list:
-            """Fonction de détection des états accessibles à partir d'un état donné et d'un ensemble de transitions
+        def etats_accessibles(etat_actuel:int) -> list:
+            """Fonction de détection des états accessibles à partir d'un état donné et d'un ensemble de transitions.
+               Cette fonction ne sert que dans le cadre de la détection de code mort.
             
             Arguments:
                 transitions list[tuple]: transitions du graphe (état_départ, état_arrivée)
@@ -286,27 +287,24 @@ class Machine(object):
         
 
         taille, transitions = self.graphe()
-        accessibles = set()
+        inaccessibles = set(i for i in range(1, taille + 1))
+        print(inaccessibles)
         actuels = [0]
 
         while actuels:
             nouveaux = []
-
+            print(actuels)
+            print(inaccessibles)
             for etat in actuels:
-                temp = etats_accessibles(transitions, etat)
+                temp = etats_accessibles(etat)
                 for e in temp:
-                    if e not in accessibles:
+                    if e in inaccessibles:
+                        inaccessibles.remove(e)
                         nouveaux.append(e)
-            
-            accessibles.update(nouveaux)
+    
             actuels = nouveaux
 
-        non_accessibles = set()
-        for i in range(taille, 0, -1):
-            if i not in accessibles:
-                non_accessibles.add(i)
-
-        return non_accessibles
+        return inaccessibles
     
     def suppr(self, indexes:set):
         """Supprime les instructions aux indexes donnés dans le programme tout en conservant son bon fonctionnement
@@ -375,17 +373,23 @@ class Machine(object):
         print("\nÉxecution du programme\n")
         print(f"Graphe (Nb de sommets, transitions):\n{str(graphe := self.graphe())}\n")
 
+        # Si Il existe des états inaccessibles dans le graphe du programme
         if (indexes := self.detection_code_mort()):
 
             non_acc = []
+            # Pour chaque états non accessible
             for i in indexes:
+
+                # Si Cet état est l'état final: Erreur
                 if i == graphe[0]:
                     raise SyntaxError("Le programme ne termine jamais")
+                # Sinon stocker l'instruction non accessible à partir de son index
                 else:
                     non_acc.append(self.get_instr(i))
             
             supp = str(input(f"Les instructions suivantes ne sont jamais accessibles: {non_acc}\nEtape(s):  {indexes}\nSupprimmer les instructions inaccessibles ?\ny: oui, sinon passer\n  >"))
 
+            # On réécrit le contenu de la machine dans le programme input
             if supp == "y":
                 self.suppr(indexes)
                 file = open("input.1", "w")
