@@ -93,6 +93,7 @@ StringBuffer fin;
 %token VIRG
 %token NUMB
 %left FDL
+%left YYEOF
 
 %type <lettre> INSTRUCTION programme input NUMB
 
