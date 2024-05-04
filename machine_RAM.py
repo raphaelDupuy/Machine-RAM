@@ -50,7 +50,7 @@ class Machine(object):
         return self.etape
     
     def get_instr(self, etape=None) -> str:
-        """Retourne l'instruction courante à effectuer par la machine"""
+        """Retourne l'instruction courante à effectuer par la machine si etape n'est pas spécifié sinon l'instruction à cette étape"""
         if etape != None:
             return self.prog[etape]
         else:
@@ -369,6 +369,85 @@ class Machine(object):
         if jumps_morts:
             self.suppr(set(jumps_morts))
 
+        self.update_input()
+
+    def optimisation(self):
+        print("Optimisation du programme en cours...")
+
+        get_arg = lambda i, j : self.get_instr(i).split("(")[1].split(")")[0].split(",")[j]
+        sommets, transitions = self.graphe()
+        suppr = set()
+
+        # Pour chaque instruction
+        for index in range(sommets):
+            # Si l'instruction est un ADD
+            if (self.get_instr(index).split("(")[0] == "ADD"):
+                # On regarde ses prédecesseurs et on vérifie qu'il n'y en a qu'un seul et que c'est un ADD
+                i = 0
+                pred = None
+                while (i < sommets):
+                    if ((i, index) in transitions):
+                        # Si ils écrivent dans le même registre
+                        if (self.get_instr(i).split("(")[0] == "ADD") and (get_arg(i, 2) == get_arg(index, 2)):
+                            registre = get_arg(index, 2)
+                            pred = i
+                        else:
+                            pred, i = None, sommets
+                    i += 1
+
+            # On les fusionne si possible
+            if pred is not None:
+
+                nombre_registres = 0
+                somme = 0
+                args = [get_arg(pred, 0), get_arg(pred, 1), get_arg(index, 0), get_arg(index, 1)]
+                position = None
+                position_arrivée = None
+                # On vérifie si un des arguments est un registre et si il est le seul et qu'il est différent du registre dans lequel l'instruction écrit
+                for i in range(4):
+                    if args[i][0] in {"I", "R", "O"}:
+                        if args[i] == registre:
+                            position_arrivée = i
+                        else:
+                            nombre_registres += 1
+                            position = i
+                    else:
+                        somme += int(args[i])
+
+                # On crée une nouvelle instruction en fonction de la présence d'un registre ou non
+                if nombre_registres < 2:
+                    if position is not None:
+                        nouvelle_instr = f"ADD({args[position]},{somme},{registre})"
+                        self.prog[index] = nouvelle_instr
+                    elif position_arrivée is not None:
+                        nouvelle_instr = f"ADD({somme},0,{registre})"
+                        self.prog[index] = nouvelle_instr
+                    suppr.add(pred)
+
+        if len(suppr):
+            self.suppr(suppr)
+            print((f"Optimisation terminée, {len(suppr)} changements effectués.\n"))
+            print(f"Graphe (Nb de sommets, transitions):\n{self.graphe()}\n")
+        else:
+            print("Optimisation terminée, aucun changements effectués.\n")
+
+    def update_input(self):
+        file = open("input.1", "w")
+        entree = ""
+        for elem in self.get_entree():
+            entree += str(elem.split(":")[1] + ",")
+        entree = entree[:-1]
+
+        entree += "\n"
+        for instr in self.get_prog():
+            entree += instr + "\n"
+        entree = entree[:-1]
+
+        file.write(entree)
+        file.close()
+                
+
+
     def calcule(self):
         """Éxecute le programme RAM de la machine
         
@@ -376,7 +455,6 @@ class Machine(object):
             print: Configuration lisible de la machine à chaque étape puis registre Sortie à la fin du programme
         """
 
-        print("\nÉxecution du programme\n")
         print(f"Graphe (Nb de sommets, transitions):\n{str(graphe := self.graphe())}\n")
 
         # Si Il existe des états inaccessibles dans le graphe du programme
@@ -397,25 +475,16 @@ class Machine(object):
 
             # On réécrit le contenu de la machine dans le programme input
             if supp == "y":
+                print("Suppression du code mort.\n")
                 self.suppr(indexes)
-                file = open("input.1", "w")
-                entree = ""
-                for elem in self.get_entree():
-                    entree += str(elem.split(":")[1] + ",")
-                entree = entree[:-1]
-
-                entree += "\n"
-                for instr in self.get_prog():
-                    entree += instr + "\n"
-                entree = entree[:-1]
-
-                file.write(entree)
-                file.close()
-
+                self.optimisation()
                 self.calcule()
 
         else:
+            print("Éxecution du programme")
             print("Aucun code mort détecté\n")
+            self.optimisation()
+
 
             while self.get_etape() < len(self.prog):
                 self.next()
