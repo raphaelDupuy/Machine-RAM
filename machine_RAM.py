@@ -206,16 +206,20 @@ class Machine(object):
         
         self.set_etape(self.get_etape() + saut)
 
-    def graphe(self):
+    def graphe(self) -> tuple:
         """Fonction d'affichage du graphe correspondant au programme RAM
         Le dernier état est l'état de Fin de programme
+
+        Retoutne:
+            (tuple): (sommets, arêtes) où somments est le nombre de sommets et arêtes est la liste des transitions
+                    écrites dans un tuple de deux sommets (int, int)
         """
         aretes = []
         etape = 0
         programme = self.get_prog()
         sommets = len(programme)
 
-        for instr in programme:
+        for index, instr in enumerate(programme):
             match instr.split("(")[0], instr.split("(")[1].split(")")[0].split(","):
                 
                 case["ADD", args]:
@@ -229,12 +233,15 @@ class Machine(object):
 
                 case["JUMP", args]:
                     valeur = self.valeur(args[0])
-                    saut = etape + valeur + (1 if valeur > 0 else (- 1 if valeur < 0 else 0))
-                    if saut < 0:
-                        saut = 0
-                    elif saut > sommets:
-                        saut = sommets
-                    aretes.append((etape, saut))
+                    if valeur: 
+                        saut = etape + valeur + (1 if valeur > 0 else (- 1 if valeur < 0 else 0))
+                        if saut < 0:
+                            saut = 0
+                        elif saut > sommets:
+                            saut = sommets
+                        aretes.append((etape, saut))
+                    else:
+                        raise ValueError(f"Le JUMP à l'étape {index} est de taille 0")
 
                 case["JE", args]:
                     valeur = self.valeur(args[2])
@@ -288,15 +295,14 @@ class Machine(object):
 
         taille, transitions = self.graphe()
         inaccessibles = set(i for i in range(1, taille + 1))
-        print(inaccessibles)
         actuels = [0]
 
         while actuels:
             nouveaux = []
-            print(actuels)
-            print(inaccessibles)
+
             for etat in actuels:
                 temp = etats_accessibles(etat)
+
                 for e in temp:
                     if e in inaccessibles:
                         inaccessibles.remove(e)
