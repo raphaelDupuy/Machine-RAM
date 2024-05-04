@@ -89,6 +89,7 @@ StringBuffer fin;
 /* tokens */
 %token INSTRUCTION
 %token FDL
+%token YYEOF
 %token VIRG
 %token NUMB
 %left FDL
