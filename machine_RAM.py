@@ -372,6 +372,7 @@ class Machine(object):
         self.update_input()
 
     def optimisation(self):
+        """Optimise le code de la machine en fusionnant les opérations qui peuvent l'être"""
         print("Optimisation du programme en cours...")
 
         get_arg = lambda i, j : self.get_instr(i).split("(")[1].split(")")[0].split(",")[j]
@@ -432,6 +433,7 @@ class Machine(object):
             print("Optimisation terminée, aucun changements effectués.\n")
 
     def update_input(self):
+        """Copie le registre d'entrée et le programme qui se trouvent dans la mémoire de la machine dans le fichier input.1"""
         file = open("input.1", "w")
         entree = ""
         for elem in self.get_entree():
@@ -445,8 +447,6 @@ class Machine(object):
 
         file.write(entree)
         file.close()
-                
-
 
     def calcule(self):
         """Éxecute le programme RAM de la machine
